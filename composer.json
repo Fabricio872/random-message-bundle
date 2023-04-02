@@ -1,0 +1,27 @@
+{
+    "name": "fabricio872/random-message-bundle",
+    "description": "Symfony bundle that gives you various funny messages you can display on loading screen or anywhere where you need some placeholder content",
+    "type": "symfony-bundle",
+    "require": {
+        "symfony/http-kernel": "^6.1",
+        "symfony/yaml": "^6.1",
+        "symfony/event-dispatcher": "^6.1",
+        "symfony/event-dispatcher-contracts": "^3.1",
+        "symfony/twig-bundle": "^6.1",
+        "symfony/serializer": "^6.2",
+        "doctrine/collections": "^2.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Fabricio872\\RandomMessageBundle\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Fabricio",
+            "email": "fabricio872@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}

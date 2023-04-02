@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Explicitly configure the service -->
+
+        <service id="fabricio872_random_message.random_message"
+                 class="Fabricio872\RandomMessageBundle\RandomMessage"
+                 public="true" autowire="true">
+            <tag name="twig.runtime"/>
+        </service>
+
+        <service id="Fabricio872\RandomMessageBundle\RandomMessage"
+                 alias="fabricio872_random_message.random_message"
+                 public="false"/>
+
+        <service id="fabricio872_random_message.twig.extension.random_message_extension"
+                 class="Fabricio872\RandomMessageBundle\Twig\Extension\RandomMessageExtension"
+                 public="true" autowire="true">
+            <tag name="twig.extension"/>
+        </service>
+
+        <service id="Fabricio872\RandomMessageBundle\Twig\Extension\RandomMessageExtension"
+                 alias="fabricio872_random_message.twig.extension.random_message_extension"
+                 public="false"/>
+    </services>
+</container>
