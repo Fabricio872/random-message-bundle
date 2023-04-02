@@ -26,5 +26,15 @@
         <service id="Fabricio872\RandomMessageBundle\Twig\Extension\RandomMessageExtension"
                  alias="fabricio872_random_message.twig.extension.random_message_extension"
                  public="false"/>
+
+        <service id="fabricio872_random_message.command.random_message_create_command"
+                 class="Fabricio872\RandomMessageBundle\Command\RandomMessageCreateCommand"
+                 public="true" autowire="true">
+            <tag name="console.command" command="random_message:create"/>
+        </service>
+
+        <service id="Fabricio872\RandomMessageBundle\Command\RandomMessageCreateCommand"
+                 alias="fabricio872_random_message.command.random_message_create_command"
+                 public="false"/>
     </services>
 </container>

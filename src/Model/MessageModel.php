@@ -2,15 +2,18 @@
 
 namespace Fabricio872\RandomMessageBundle\Model;
 
+use Symfony\Component\Validator\Constraints as Assert;
+
 class MessageModel
 {
-    private string $message = '';
-    private bool $isNsfw = false;
-    private string $lang = '';
+    private string $message;
+    private bool $isNsfw;
+    private string $lang;
 
     /**
      * @return string
      */
+    #[Assert\NotBlank]
     public function getMessage(): string
     {
         return $this->message;
