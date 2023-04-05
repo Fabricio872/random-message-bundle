@@ -23,7 +23,7 @@ class RandomMessage implements RuntimeExtensionInterface
      */
     public function getMessage(): ?string
     {
-        return $this->getMessages()->get(rand(0, $this->getMessages()->count() - 1))?->getMessage();
+        return $this->getMessages()->get(rand(0, $this->getMessages()->count() - 1));
     }
 
     private static function getFiles(string $path): array
@@ -50,7 +50,10 @@ class RandomMessage implements RuntimeExtensionInterface
     {
         $messages = new ArrayCollection();
         foreach (self::getFiles($this->path) as $filePath) {
-            foreach ($this->serializer->deserialize(file_get_contents($filePath), MessageModel::class . '[]', 'json') as $message) {
+            /** @var MessageModel $model */
+            $model = $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
+            dump($model);
+            foreach ($model->getMessages() as $message) {
                 $messages->add($message);
             }
         }

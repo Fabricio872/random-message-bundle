@@ -2,37 +2,74 @@
 
 namespace Fabricio872\RandomMessageBundle\Model;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class MessageModel
 {
-    private string $message;
-    private bool $isNsfw;
-    private string $lang;
+    private string $category;
+    private ArrayCollection $messages;
+    private ?bool $isNsfw = null;
+    #[Assert\Language]
+    private ?string $language = null;
+    private ?string $version = null;
+
+    public function __construct()
+    {
+        $this->messages = new ArrayCollection();
+    }
 
     /**
      * @return string
      */
-    #[Assert\NotBlank]
-    public function getMessage(): string
+    public function getCategory(): string
     {
-        return $this->message;
+        return $this->category;
+    }
+
+    /**
+     * @param string $category
+     * @return MessageModel
+     */
+    public function setCategory(string $category): MessageModel
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    /**
+     * @return ArrayCollection<int, string>
+     */
+    public function getMessages(): ArrayCollection
+    {
+        return $this->messages;
+    }
+
+    /**
+     * @param array $messages
+     * @return MessageModel
+     */
+    public function setMessages(array $messages): MessageModel
+    {
+        $this->messages = new ArrayCollection($messages);
+
+        return $this;
     }
 
     /**
      * @param string $message
      * @return MessageModel
      */
-    public function setMessage(string $message): MessageModel
+    public function addMessage(string $message): MessageModel
     {
-        $this->message = $message;
+        $this->messages->add($message);
         return $this;
     }
 
     /**
      * @return bool
      */
-    public function isNsfw(): bool
+    public function isNsfw(): ?bool
     {
         return $this->isNsfw;
     }
@@ -48,20 +85,38 @@ class MessageModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getLang(): string
+    public function getLanguage(): ?string
     {
-        return $this->lang;
+        return $this->language;
     }
 
     /**
-     * @param string $lang
+     * @param string $language
      * @return MessageModel
      */
-    public function setLang(string $lang): MessageModel
+    public function setLanguage(string $language): MessageModel
     {
-        $this->lang = $lang;
+        $this->language = $language;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getVersion(): ?string
+    {
+        return $this->version;
+    }
+
+    /**
+     * @param string $version
+     * @return MessageModel
+     */
+    public function setVersion(string $version): MessageModel
+    {
+        $this->version = $version;
         return $this;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Fabricio872\RandomMessageBundle\Command;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Composer\InstalledVersions;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -36,7 +36,7 @@ class RandomMessageCreateCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('category', InputArgument::OPTIONAL, 'Category for messages e.g. dad jokes, inspirational quotes')
+            ->addArgument('category', InputArgument::OPTIONAL, 'Category name for messages e.g. dad jokes, inspirational quotes')
             ->addArgument('lang', InputArgument::OPTIONAL, 'Define language')
             ->addOption('nsfw', 'N', InputOption::VALUE_OPTIONAL, 'Mark as NSFW. If not present this will be asked on every message');
     }
@@ -44,59 +44,67 @@ class RandomMessageCreateCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->io = new SymfonyStyle($input, $output);
+
         $category = $input->getArgument('category');
 
         if (!$category) {
-            $category = $this->io->ask('Category for messages e.g. dad jokes, inspirational quotes');
+            $category = $this->io->ask('Category name for messages e.g. dad jokes, inspirational quotes');
         }
-        $category = u($category)->snake();
+        $categorySnake = u($category)->snake();
 
-        $lang = $input->getArgument('lang');
-        if (!$lang) {
-            $lang = $this->getLanguage();
+        $filePath = $this->path . DIRECTORY_SEPARATOR . $categorySnake . '.json';
+        $model = new MessageModel();
+        if (file_exists($filePath)) {
+            /** @var MessageModel $model */
+            $model = $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
+            $this->io->info(sprintf('Found category with %s messages continuing adding.', $model->getMessages()->count()));
         }
 
-        $nsfw = $input->getOption('nsfw');
 
-        $filePath = $this->path . DIRECTORY_SEPARATOR . $category . '.json';
-        do {
-            $messages = new ArrayCollection();
-            if (file_exists($filePath)) {
-                foreach ($this->serializer->deserialize(file_get_contents($filePath), MessageModel::class . '[]', 'json') as $message) {
-                    $messages->add($message);
-                }
+        if (is_null($model->getLanguage())) {
+            $lang = $input->getArgument('lang');
+            if (!$lang) {
+                $model->setLanguage($this->getLanguage());
             }
-            $rawMessage = $this->io->ask('Add message. Leave empty to stop');
-            if ($rawMessage) {
-                $message = new MessageModel();
+        }
 
-                $message->setMessage($rawMessage);
-
-                if ($lang) {
-                    $message->setLang($lang);
-                } else {
-                    $message->setLang($this->getLanguage());
-                }
-
-                if (!is_null($nsfw)) {
-                    $message->setIsNsfw($nsfw);
-                } else {
-                    $message->setIsNsfw($this->io->ask('Mark as NSFW [y/n]', 'n') == 'y');
-                }
-
-                if ($this->validator->validate($message)->count()) {
-                    foreach ($this->validator->validate($message) as $violation) {
-                        $this->io->warning($violation->getMessage());
-                    }
-                } else {
-                    $messages->add($message);
-                }
+        if (!is_null($model->isNsfw())) {
+            $nsfw = $input->getOption('nsfw');
+            if (!is_null($nsfw)) {
+                $model->setIsNsfw($nsfw);
+            } else {
+                $model->setIsNsfw($this->io->ask('Mark as NSFW [y/n]', 'n') == 'y');
             }
+        }
+        $model->setVersion(InstalledVersions::getVersion('fabricio872/random-message-bundle'));
 
-            if (!file_exists($this->path)){
+        if ($this->validator->validate($model)->count()) {
+            foreach ($this->validator->validate($model) as $violation) {
+                $this->io->warning($violation->getMessage());
+            }
+            return Command::INVALID;
+        } else {
+            if (!file_exists($this->path)) {
                 mkdir($this->path);
             }
-            file_put_contents($filePath, $this->serializer->serialize($messages, 'json'));
+            file_put_contents($filePath, $this->serializer->serialize($model, 'json'));
+        }
+
+
+        do {
+            $rawMessage = $this->io->ask('Add message. Leave empty to stop');
+            if ($rawMessage) {
+
+                $model->addMessage($rawMessage);
+
+                if ($this->validator->validate($model)->count()) {
+                    foreach ($this->validator->validate($model) as $violation) {
+                        $this->io->warning($violation->getMessage());
+                    }
+                    return Command::INVALID;
+                }
+            }
+            file_put_contents($filePath, $this->serializer->serialize($model, 'json'));
         } while ($rawMessage);
 
 
