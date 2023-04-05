@@ -36,5 +36,15 @@
         <service id="Fabricio872\RandomMessageBundle\Command\RandomMessageCreateCommand"
                  alias="fabricio872_random_message.command.random_message_create_command"
                  public="false"/>
+
+        <service id="fabricio872_random_message.command.random_message_pull_command"
+                 class="Fabricio872\RandomMessageBundle\Command\RandomMessagePullCommand"
+                 public="true" autowire="true">
+            <tag name="console.command" command="random_message:pull"/>
+        </service>
+
+        <service id="Fabricio872\RandomMessageBundle\Command\RandomMessagePullCommand"
+                 alias="fabricio872_random_message.command.random_message_pull_command"
+                 public="false"/>
     </services>
 </container>
