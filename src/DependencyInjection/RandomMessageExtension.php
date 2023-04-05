@@ -23,6 +23,9 @@ class RandomMessageExtension extends Extension
         $createCommandDefinition = $container->getDefinition('fabricio872_random_message.command.random_message_create_command');
         $createCommandDefinition->setArgument(0, $config['path']);
 
+        $pullCommandDefinition = $container->getDefinition('fabricio872_random_message.service.git_service');
+        $pullCommandDefinition->setArgument(0, $config['path']);
+
         $pullCommandDefinition = $container->getDefinition('fabricio872_random_message.command.random_message_pull_command');
         $pullCommandDefinition->setArgument(0, $config['path']);
         $pullCommandDefinition->setArgument(1, $config['repositories']);

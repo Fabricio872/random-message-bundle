@@ -17,6 +17,15 @@
                  alias="fabricio872_random_message.random_message"
                  public="false"/>
 
+        <service id="fabricio872_random_message.service.git_service"
+                 class="Fabricio872\RandomMessageBundle\Service\GitService"
+                 public="true" autowire="true">
+        </service>
+
+        <service id="Fabricio872\RandomMessageBundle\Service\GitService"
+                 alias="fabricio872_random_message.service.git_service"
+                 public="false"/>
+
         <service id="fabricio872_random_message.twig.extension.random_message_extension"
                  class="Fabricio872\RandomMessageBundle\Twig\Extension\RandomMessageExtension"
                  public="true" autowire="true">
