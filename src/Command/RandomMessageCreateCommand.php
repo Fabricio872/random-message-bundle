@@ -4,6 +4,7 @@ namespace Fabricio872\RandomMessageBundle\Command;
 
 use Composer\InstalledVersions;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
+use Fabricio872\RandomMessageBundle\Service\GitService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -26,8 +27,10 @@ class RandomMessageCreateCommand extends Command
 
     public function __construct(
         private string              $path,
+        private array               $repositories,
         private SerializerInterface $serializer,
-        private ValidatorInterface  $validator
+        private ValidatorInterface  $validator,
+        private GitService $gitService
     )
     {
         parent::__construct();
@@ -47,12 +50,16 @@ class RandomMessageCreateCommand extends Command
 
         $category = $input->getArgument('category');
 
+        $repo = $this->pickRepo();
+
+        $this->gitService->resolveRepo($repo);
+
         if (!$category) {
             $category = $this->io->ask('Category name for messages e.g. dad jokes, inspirational quotes');
         }
         $categorySnake = u($category)->snake();
 
-        $filePath = $this->path . DIRECTORY_SEPARATOR . $categorySnake . '.json';
+        $filePath = $this->gitService->getPath($repo) . DIRECTORY_SEPARATOR . $categorySnake . '.json';
         $model = new MessageModel();
         if (file_exists($filePath)) {
             /** @var MessageModel $model */
@@ -119,5 +126,15 @@ class RandomMessageCreateCommand extends Command
             $lang = $this->io->ask('Define language', 'en');
         }
         return $lang;
+    }
+
+    private function pickRepo()
+    {
+        foreach ($this->repositories as $id=>$repository){
+
+            $this->io->writeln(sprintf('[%s] %s', $id, $repository));
+        }
+
+        return $this->repositories[$this->io->ask('Pick repository', 0)];
     }
 }
