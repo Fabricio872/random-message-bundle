@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class MessageModel
 {
-    private string $category;
+    private ?string $category = null;
     private ArrayCollection $messages;
     private ?bool $isNsfw = null;
     #[Assert\Language]
@@ -20,18 +20,18 @@ class MessageModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getCategory(): string
+    public function getCategory(): ?string
     {
         return $this->category;
     }
 
     /**
-     * @param string $category
+     * @param string|null $category
      * @return MessageModel
      */
-    public function setCategory(string $category): MessageModel
+    public function setCategory(?string $category): MessageModel
     {
         $this->category = $category;
         return $this;
@@ -60,7 +60,7 @@ class MessageModel
      * @param string $message
      * @return MessageModel
      */
-    public function addMessage(string $message): MessageModel
+    public function addMessage(?string $message): MessageModel
     {
         $this->messages->add($message);
         return $this;
@@ -78,7 +78,7 @@ class MessageModel
      * @param bool $isNsfw
      * @return MessageModel
      */
-    public function setIsNsfw(bool $isNsfw): MessageModel
+    public function setIsNsfw(?bool $isNsfw): MessageModel
     {
         $this->isNsfw = $isNsfw;
         return $this;
@@ -96,7 +96,7 @@ class MessageModel
      * @param string $language
      * @return MessageModel
      */
-    public function setLanguage(string $language): MessageModel
+    public function setLanguage(?string $language): MessageModel
     {
         $this->language = $language;
         return $this;
@@ -114,7 +114,7 @@ class MessageModel
      * @param string $version
      * @return MessageModel
      */
-    public function setVersion(string $version): MessageModel
+    public function setVersion(?string $version): MessageModel
     {
         $this->version = $version;
         return $this;

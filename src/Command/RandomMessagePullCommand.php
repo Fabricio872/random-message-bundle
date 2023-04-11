@@ -35,7 +35,7 @@ class RandomMessagePullCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
         foreach ($this->repositories as $repo) {
-            $this->io->writeln(match ($this->gitService->resolveRepo($repo)) {
+            $this->io->writeln(match ($this->gitService->updateRepo($repo)) {
                 GitService::GIT_CLONE => sprintf('Repository "%s" cloned', $repo),
                 GitService::GIT_PULL => sprintf('Repository "%s" pulled', $repo),
                 GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo)

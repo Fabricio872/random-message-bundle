@@ -4,6 +4,7 @@ namespace Fabricio872\RandomMessageBundle\Command;
 
 use Composer\InstalledVersions;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
+use Fabricio872\RandomMessageBundle\RandomMessage;
 use Fabricio872\RandomMessageBundle\Service\GitService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -11,6 +12,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -30,7 +32,8 @@ class RandomMessageCreateCommand extends Command
         private array               $repositories,
         private SerializerInterface $serializer,
         private ValidatorInterface  $validator,
-        private GitService $gitService
+        private GitService          $gitService,
+        private RandomMessage       $randomMessage
     )
     {
         parent::__construct();
@@ -52,10 +55,16 @@ class RandomMessageCreateCommand extends Command
 
         $repo = $this->pickRepo();
 
-        $this->gitService->resolveRepo($repo);
+        $this->io->writeln(match ($this->gitService->updateRepo($repo)) {
+            GitService::GIT_CLONE => sprintf('Repository "%s" cloned', $repo),
+            GitService::GIT_PULL => sprintf('Repository "%s" pulled', $repo),
+            GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo)
+        });
 
         if (!$category) {
-            $category = $this->io->ask('Category name for messages e.g. dad jokes, inspirational quotes');
+            $question = new Question('Category name for messages e.g. dad jokes, inspirational quotes');
+            $question->setAutocompleterValues($this->getCategories($repo));
+            $category = $this->io->askQuestion($question);
         }
         $categorySnake = u($category)->snake();
 
@@ -66,7 +75,7 @@ class RandomMessageCreateCommand extends Command
             $model = $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
             $this->io->info(sprintf('Found category with %s messages continuing adding.', $model->getMessages()->count()));
         }
-
+        $model->setCategory($category);
 
         if (is_null($model->getLanguage())) {
             $lang = $input->getArgument('lang');
@@ -128,13 +137,25 @@ class RandomMessageCreateCommand extends Command
         return $lang;
     }
 
-    private function pickRepo()
+    private function pickRepo(): string
     {
-        foreach ($this->repositories as $id=>$repository){
+        foreach ($this->repositories as $id => $repository) {
 
             $this->io->writeln(sprintf('[%s] %s', $id, $repository));
         }
 
         return $this->repositories[$this->io->ask('Pick repository', 0)];
+    }
+
+    private function getCategories(string $repo)
+    {
+        $categories = [];
+        foreach (RandomMessage::getFiles($this->gitService->getPath($repo)) as $item) {
+            $model = $this->randomMessage->getModel($item);
+            if ($model) {
+                $categories[] = $model->getCategory();
+            }
+        }
+        return $categories;
     }
 }

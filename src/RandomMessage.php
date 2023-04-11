@@ -34,12 +34,7 @@ class RandomMessage implements RuntimeExtensionInterface
     {
         $messages = new ArrayCollection();
         foreach (self::getFiles($this->path) as $filePath) {
-            try {
-                /** @var MessageModel $model */
-                $model = $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
-            } catch (NotEncodableValueException $exception) {
-                continue;
-            }
+            $model = $this->getModel($filePath);
 
             foreach ($model->getMessages() as $message) {
                 $messages->add($message);
@@ -48,7 +43,17 @@ class RandomMessage implements RuntimeExtensionInterface
         return $messages;
     }
 
-    private static function getFiles(string $path): array
+    public function getModel(string $filePath): ?MessageModel
+    {
+        try {
+            /** @var MessageModel $model */
+            return $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
+        } catch (NotEncodableValueException $exception) {
+            return null;
+        }
+    }
+
+    public static function getFiles(string $path): array
     {
         $files = [];
         $dirs = scandir($path);

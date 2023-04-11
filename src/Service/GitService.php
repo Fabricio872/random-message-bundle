@@ -32,7 +32,7 @@ class GitService
         return $this->path . '/' . $exploded[1] . '/' . $exploded[2];
     }
 
-    public function resolveRepo(string $repo): int
+    public function updateRepo(string $repo): int
     {
         try {
             $this->git->cloneRepository($repo, $this->getPath($repo));
