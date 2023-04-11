@@ -36,8 +36,10 @@ class RandomMessage implements RuntimeExtensionInterface
         foreach (self::getFiles($this->path) as $filePath) {
             $model = $this->getModel($filePath);
 
-            foreach ($model->getMessages() as $message) {
-                $messages->add($message);
+            if ($model) {
+                foreach ($model->getMessages() as $message) {
+                    $messages->add($message);
+                }
             }
         }
         return $messages;
