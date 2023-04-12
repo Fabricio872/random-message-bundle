@@ -81,6 +81,13 @@ random_message:
 
 # Usage
 
+First of all we need to pull messages from message repository. To do that execute this command: ```bin/console random_message:pull```
+this command will go through all configured repositories and will try to download or update them.
+
+ > note: it might come useful to include this command to be executed every time you do **composer install** or **composer update**
+ > to do that in your composer.json look for "scripts" and in "auto-scripts" add under "cache:clear": "symfony-cmd"
+ > new line with "random_message:pull": "symfony-cmd",
+
 For receiving random message you can use Dependency injection inside your controller
 ```php
 // src/Controller/SomeController.php
