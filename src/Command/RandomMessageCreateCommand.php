@@ -6,6 +6,7 @@ use Composer\InstalledVersions;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
 use Fabricio872\RandomMessageBundle\RandomMessage;
 use Fabricio872\RandomMessageBundle\Service\GitService;
+use Fabricio872\RandomMessageBundle\Traits\QuestionsTrait;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -26,6 +27,8 @@ use function Symfony\Component\String\u;
 class RandomMessageCreateCommand extends Command
 {
     private SymfonyStyle $io;
+
+    use QuestionsTrait;
 
     public function __construct(
         private string              $path,
@@ -135,16 +138,6 @@ class RandomMessageCreateCommand extends Command
             $lang = $this->io->ask('Define language', 'en');
         }
         return $lang;
-    }
-
-    private function pickRepo(): string
-    {
-        foreach ($this->repositories as $id => $repository) {
-
-            $this->io->writeln(sprintf('[%s] %s', $id, $repository));
-        }
-
-        return $this->repositories[$this->io->ask('Pick repository', 0)];
     }
 
     private function getCategories(string $repo)

@@ -3,6 +3,7 @@
 namespace Fabricio872\RandomMessageBundle\Command;
 
 use Fabricio872\RandomMessageBundle\Service\GitService;
+use Fabricio872\RandomMessageBundle\Traits\QuestionsTrait;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

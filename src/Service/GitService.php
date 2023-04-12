@@ -51,4 +51,42 @@ class GitService
         }
         return self::GIT_NOTHING;
     }
+
+    public function repoChanges(string $repo): ?array
+    {
+        $repository = $this->git->open($this->getPath($repo));
+
+        if ($repository->hasChanges()) {
+            return $repository->execute('status', '--porcelain');
+        }
+        return null;
+    }
+
+    public function makePullRequest(string $repo, string $commitMessage, string $gitEmail, string $gitName, string $accessToken): ?string
+    {
+        $this->updateRepo($repo);
+        $repository = $this->git->open($this->getPath($repo));
+
+        if ($repository->hasChanges()) {
+            $repository->addAllChanges();
+            $repository->execute('config', 'user.email', $gitEmail);
+            $repository->execute('config', 'user.name', $gitName);
+            $repository->commit($commitMessage);
+
+            $repository->push(
+                sprintf(
+                    'https://%s:%s@%s',
+                    $gitName,
+                    $accessToken,
+                    substr(
+                        $repo,
+                        strlen('https://')
+                    )
+                )
+            );
+
+            return "Repositroy pushed.";
+        }
+        return null;
+    }
 }
