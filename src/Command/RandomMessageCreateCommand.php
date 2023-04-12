@@ -106,7 +106,8 @@ class RandomMessageCreateCommand extends Command
             if (!file_exists($this->path)) {
                 mkdir($this->path);
             }
-            file_put_contents($filePath, $this->serializer->serialize($model, 'json'));
+
+            $this->writeToFile($filePath, $model);
         }
 
 
@@ -123,11 +124,25 @@ class RandomMessageCreateCommand extends Command
                     return Command::INVALID;
                 }
             }
-            file_put_contents($filePath, $this->serializer->serialize($model, 'json'));
+            $this->writeToFile($filePath, $model);
         } while ($rawMessage);
 
 
         return Command::SUCCESS;
+    }
+
+    private function writeToFile(string $filePath, MessageModel $model): void
+    {
+        file_put_contents(
+            $filePath,
+            json_encode(
+                json_decode(
+                    $this->serializer->serialize($model, 'json'),
+                    true
+                ),
+                JSON_PRETTY_PRINT
+            )
+        );
     }
 
     private function getLanguage(): string
