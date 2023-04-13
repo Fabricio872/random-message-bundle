@@ -9,7 +9,6 @@ class MessageModel
 {
     private ?string $category = null;
     private ArrayCollection $messages;
-    private ?bool $isNsfw = null;
     #[Assert\Language]
     private ?string $language = null;
     private ?string $version = null;
@@ -63,24 +62,6 @@ class MessageModel
     public function addMessage(?string $message): MessageModel
     {
         $this->messages->add($message);
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isNsfw(): ?bool
-    {
-        return $this->isNsfw;
-    }
-
-    /**
-     * @param bool $isNsfw
-     * @return MessageModel
-     */
-    public function setIsNsfw(?bool $isNsfw): MessageModel
-    {
-        $this->isNsfw = $isNsfw;
         return $this;
     }
 

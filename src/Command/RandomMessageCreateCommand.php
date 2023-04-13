@@ -46,8 +46,7 @@ class RandomMessageCreateCommand extends Command
     {
         $this
             ->addArgument('category', InputArgument::OPTIONAL, 'Category name for messages e.g. dad jokes, inspirational quotes')
-            ->addArgument('lang', InputArgument::OPTIONAL, 'Define language')
-            ->addOption('nsfw', 'N', InputOption::VALUE_OPTIONAL, 'Mark as NSFW. If not present this will be asked on every message');
+            ->addArgument('lang', InputArgument::OPTIONAL, 'Define language');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -87,14 +86,6 @@ class RandomMessageCreateCommand extends Command
             }
         }
 
-        if (!is_null($model->isNsfw())) {
-            $nsfw = $input->getOption('nsfw');
-            if (!is_null($nsfw)) {
-                $model->setIsNsfw($nsfw);
-            } else {
-                $model->setIsNsfw($this->io->ask('Mark as NSFW [y/n]', 'n') == 'y');
-            }
-        }
         $model->setVersion(InstalledVersions::getVersion('fabricio872/random-message-bundle'));
 
         if ($this->validator->validate($model)->count()) {
