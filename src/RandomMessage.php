@@ -12,6 +12,7 @@ class RandomMessage implements RuntimeExtensionInterface
 {
     public function __construct(
         private string              $path,
+        private string              $defaultLanguage,
         private SerializerInterface $serializer
     )
     {
@@ -22,15 +23,15 @@ class RandomMessage implements RuntimeExtensionInterface
      *
      * @return string
      */
-    public function getMessage(): ?string
+    public function getMessage(string $language = null): ?string
     {
-        return $this->getAllMessages()->get(rand(0, $this->getAllMessages()->count() - 1));
+        return $this->getAllMessages($language ?? $this->defaultLanguage)->get(rand(0, $this->getAllMessages($language ?? $this->defaultLanguage)->count() - 1));
     }
 
     /**
      * @return ArrayCollection<int, MessageModel>
      */
-    public function getAllMessages(): ArrayCollection
+    public function getAllMessages(string $language = null): ArrayCollection
     {
         $messages = new ArrayCollection();
         foreach (self::getFiles($this->path) as $filePath) {
@@ -38,7 +39,9 @@ class RandomMessage implements RuntimeExtensionInterface
 
             if ($model) {
                 foreach ($model->getMessages() as $message) {
-                    $messages->add($message);
+                    if ($model->getLanguage() === $language ?? $this->defaultLanguage) {
+                        $messages->add($message);
+                    }
                 }
             }
         }
