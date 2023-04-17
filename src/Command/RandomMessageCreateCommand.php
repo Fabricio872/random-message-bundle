@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Command;
 
 use Composer\InstalledVersions;
@@ -11,14 +13,13 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\SerializerInterface;
+use function Symfony\Component\String\u;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WhiteCube\Lingua\W3cConverter;
-use function Symfony\Component\String\u;
 
 #[AsCommand(
     name: 'random_message:create',
@@ -31,15 +32,13 @@ class RandomMessageCreateCommand extends Command
     use QuestionsTrait;
 
     public function __construct(
-        private string              $path,
-        private array               $repositories,
-        private SerializerInterface $serializer,
-        private ValidatorInterface  $validator,
-        private GitService          $gitService,
-        private RandomMessage       $randomMessage
-    )
-    {
-        parent::__construct();
+        private readonly string $path,
+        private readonly array $repositories,
+        private readonly SerializerInterface $serializer,
+        private readonly ValidatorInterface $validator,
+        private readonly GitService $gitService,
+        private readonly RandomMessage $randomMessage
+    ) {
     }
 
     protected function configure(): void
@@ -63,7 +62,7 @@ class RandomMessageCreateCommand extends Command
             GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo)
         });
 
-        if (!$category) {
+        if (! $category) {
             $question = new Question('Category name for messages e.g. dad jokes, inspirational quotes');
             $question->setAutocompleterValues($this->getCategories($repo));
             $category = $this->io->askQuestion($question);
@@ -79,9 +78,9 @@ class RandomMessageCreateCommand extends Command
         }
         $model->setCategory($category);
 
-        if (is_null($model->getLanguage())) {
+        if (null === $model->getLanguage()) {
             $lang = $input->getArgument('lang');
-            if (!$lang) {
+            if (! $lang) {
                 $model->setLanguage($this->getLanguage());
             }
         }
@@ -94,18 +93,16 @@ class RandomMessageCreateCommand extends Command
             }
             return Command::INVALID;
         } else {
-            if (!file_exists($this->path)) {
+            if (! file_exists($this->path)) {
                 mkdir($this->path);
             }
 
             $this->writeToFile($filePath, $model);
         }
 
-
         do {
             $rawMessage = $this->io->ask('Add message. Leave empty to stop');
             if ($rawMessage) {
-
                 $model->addMessage($rawMessage);
 
                 if ($this->validator->validate($model)->count()) {
@@ -118,7 +115,6 @@ class RandomMessageCreateCommand extends Command
             $this->writeToFile($filePath, $model);
         } while ($rawMessage);
 
-
         return Command::SUCCESS;
     }
 
@@ -129,7 +125,9 @@ class RandomMessageCreateCommand extends Command
             json_encode(
                 json_decode(
                     $this->serializer->serialize($model, 'json'),
-                    true
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
                 ),
                 JSON_PRETTY_PRINT
             )
@@ -139,7 +137,7 @@ class RandomMessageCreateCommand extends Command
     private function getLanguage(): string
     {
         $lang = $this->io->ask('Define language');
-        while (!W3cConverter::check($lang)) {
+        while (! W3cConverter::check($lang)) {
             $this->io->warning(sprintf('Language "%s" has wrong format. Use only to letter naming schema e.g. "en"', $lang));
             $lang = $this->io->ask('Define language', 'en');
         }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Command;
 
 use Fabricio872\RandomMessageBundle\Service\GitService;
@@ -21,20 +23,17 @@ class RandomMessagePushCommand extends Command
     use QuestionsTrait;
 
     public function __construct(
-        private string     $path,
-        private array      $repositories,
-        private string     $gitEmail,
-        private string     $gitName,
-        private string     $gitAccessToken,
-        private GitService $gitService
-    )
-    {
-        parent::__construct();
+        private readonly string $path,
+        private readonly array $repositories,
+        private readonly string $gitEmail,
+        private readonly string $gitName,
+        private readonly string $gitAccessToken,
+        private readonly GitService $gitService
+    ) {
     }
 
     protected function configure(): void
     {
-        $this;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -44,7 +43,7 @@ class RandomMessagePushCommand extends Command
         $repo = $this->pickRepo();
 
         $changes = $this->gitService->repoChanges($repo);
-        if (!$changes) {
+        if (! $changes) {
             $this->io->error(sprintf('No changes for repository %s', $repo));
 
             return Command::FAILURE;
@@ -56,7 +55,7 @@ class RandomMessagePushCommand extends Command
         if ($this->io->ask('Push changes to remote? [y/n]', 'n') === 'y') {
             $commitMessage = $this->io->ask('Describe what you added');
             $message = $this->gitService->makePullRequest($repo, $commitMessage, $this->gitEmail, $this->gitName, $this->gitAccessToken);
-            if (!$message) {
+            if (! $message) {
                 return Command::FAILURE;
             }
             $this->io->success($message);

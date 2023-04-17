@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,11 +13,10 @@ use Twig\Extension\RuntimeExtensionInterface;
 class RandomMessage implements RuntimeExtensionInterface
 {
     public function __construct(
-        private string              $path,
-        private string              $defaultLanguage,
-        private SerializerInterface $serializer
-    )
-    {
+        private readonly string $path,
+        private readonly string $defaultLanguage,
+        private readonly SerializerInterface $serializer
+    ) {
     }
 
     /**
@@ -25,7 +26,7 @@ class RandomMessage implements RuntimeExtensionInterface
      */
     public function getMessage(string $language = null): ?string
     {
-        return $this->getAllMessages($language ?? $this->defaultLanguage)->get(rand(0, $this->getAllMessages($language ?? $this->defaultLanguage)->count() - 1));
+        return $this->getAllMessages($language ?? $this->defaultLanguage)->get(random_int(0, $this->getAllMessages($language ?? $this->defaultLanguage)->count() - 1));
     }
 
     /**
@@ -53,7 +54,7 @@ class RandomMessage implements RuntimeExtensionInterface
         try {
             /** @var MessageModel $model */
             return $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
-        } catch (NotEncodableValueException $exception) {
+        } catch (NotEncodableValueException) {
             return null;
         }
     }
@@ -64,12 +65,11 @@ class RandomMessage implements RuntimeExtensionInterface
         $dirs = scandir($path);
         $dirs = array_splice($dirs, 2);
         foreach ($dirs as $dir) {
-            if (!in_array($dir, ['.git'])) {
+            if (! in_array($dir, ['.git'], true)) {
                 $dir = $path . DIRECTORY_SEPARATOR . $dir;
                 if (is_dir($dir)) {
                     $files = array_merge($files, self::getFiles($dir));
                 } elseif (is_file($dir)) {
-
                     $files[] = $dir;
                 }
             }

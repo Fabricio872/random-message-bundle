@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Command;
 
 use Fabricio872\RandomMessageBundle\Service\GitService;
-use Fabricio872\RandomMessageBundle\Traits\QuestionsTrait;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,17 +20,14 @@ class RandomMessagePullCommand extends Command
     private SymfonyStyle $io;
 
     public function __construct(
-        private string     $path,
-        private array      $repositories,
-        private GitService $gitService
-    )
-    {
-        parent::__construct();
+        private readonly string $path,
+        private readonly array $repositories,
+        private readonly GitService $gitService
+    ) {
     }
 
     protected function configure(): void
     {
-        $this;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

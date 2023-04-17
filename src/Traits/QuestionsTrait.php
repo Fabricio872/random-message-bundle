@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Traits;
 
 trait QuestionsTrait
@@ -7,7 +9,6 @@ trait QuestionsTrait
     protected function pickRepo(): string
     {
         foreach ($this->repositories as $id => $repository) {
-
             $this->io->writeln(sprintf('[%s] %s', $id, $repository));
         }
 

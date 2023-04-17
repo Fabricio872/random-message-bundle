@@ -1,11 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Twig\Extension;
 
-use App\Twig\Runtime\RandomMessageExtensionRuntime;
 use Fabricio872\RandomMessageBundle\RandomMessage;
 use Twig\Extension\AbstractExtension;
-use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 class RandomMessageExtension extends AbstractExtension
