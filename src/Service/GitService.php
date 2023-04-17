@@ -27,6 +27,9 @@ class GitService
     public function getPath(string $repository): string
     {
         $parsedUrl = parse_url($repository);
+        if (! isset($parsedUrl['path'])) {
+            throw new Exception('Cannot parse url');
+        }
         $exploded = explode('/', $parsedUrl['path']);
 
         if (! isset($exploded[1]) || ! isset($exploded[2])) {
@@ -56,6 +59,10 @@ class GitService
         return self::GIT_NOTHING;
     }
 
+    /**
+     * @return array<int, string>|null
+     * @throws GitException
+     */
     public function repoChanges(string $repo): ?array
     {
         $repository = $this->git->open($this->getPath($repo));

@@ -13,7 +13,7 @@ trait QuestionsTrait
 
     protected function pickRepo(): string
     {
-        if (!$this->io instanceof SymfonyStyle) {
+        if (! $this->io instanceof SymfonyStyle) {
             throw new Exception('$this->>io variable must be instance of ' . SymfonyStyle::class);
         }
 

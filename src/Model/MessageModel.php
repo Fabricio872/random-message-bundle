@@ -11,6 +11,7 @@ class MessageModel
 {
     private ?string $category = null;
 
+    /** @var ArrayCollection<int, string> $messages */
     private ArrayCollection $messages;
 
     #[Assert\Language]
@@ -42,6 +43,9 @@ class MessageModel
         return $this->messages;
     }
 
+    /**
+     * @param array<int, string> $messages
+     */
     public function setMessages(array $messages): MessageModel
     {
         $this->messages = new ArrayCollection($messages);
@@ -54,7 +58,9 @@ class MessageModel
      */
     public function addMessage(?string $message): MessageModel
     {
-        $this->messages->add($message);
+        if ($message) {
+            $this->messages->add($message);
+        }
         return $this;
     }
 

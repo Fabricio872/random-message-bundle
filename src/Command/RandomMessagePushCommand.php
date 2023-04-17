@@ -22,6 +22,13 @@ class RandomMessagePushCommand extends Command
 
     use QuestionsTrait;
 
+    /**
+     * @param array<int, string> $repositories
+     * @param string $gitEmail
+     * @param string $gitName
+     * @param string $gitAccessToken
+     * @param GitService $gitService
+     */
     public function __construct(
         private readonly array $repositories,
         private readonly string $gitEmail,
@@ -29,6 +36,7 @@ class RandomMessagePushCommand extends Command
         private readonly string $gitAccessToken,
         private readonly GitService $gitService
     ) {
+        parent::__construct();
     }
 
     protected function configure(): void

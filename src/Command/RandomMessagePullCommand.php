@@ -19,14 +19,15 @@ class RandomMessagePullCommand extends Command
 {
     private SymfonyStyle $io;
 
+    /**
+     * @param array<int, string> $repositories
+     * @param GitService $gitService
+     */
     public function __construct(
         private readonly array $repositories,
         private readonly GitService $gitService
     ) {
-    }
-
-    protected function configure(): void
-    {
+        parent::__construct();
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fabricio872\RandomMessageBundle\Command;
 
 use Composer\InstalledVersions;
+use Exception;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
 use Fabricio872\RandomMessageBundle\RandomMessage;
 use Fabricio872\RandomMessageBundle\Service\GitService;
@@ -31,6 +32,14 @@ class RandomMessageCreateCommand extends Command
 
     use QuestionsTrait;
 
+    /**
+     * @param string $path
+     * @param array<int, string> $repositories
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface $validator
+     * @param GitService $gitService
+     * @param RandomMessage $randomMessage
+     */
     public function __construct(
         private readonly string $path,
         private readonly array $repositories,
@@ -39,6 +48,7 @@ class RandomMessageCreateCommand extends Command
         private readonly GitService $gitService,
         private readonly RandomMessage $randomMessage
     ) {
+        parent::__construct();
     }
 
     protected function configure(): void
@@ -90,7 +100,7 @@ class RandomMessageCreateCommand extends Command
 
         if ($this->validator->validate($model)->count()) {
             foreach ($this->validator->validate($model) as $violation) {
-                $this->io->warning($violation->getMessage());
+                $this->io->warning((string) $violation->getMessage());
             }
             return Command::INVALID;
         } else {
@@ -108,7 +118,7 @@ class RandomMessageCreateCommand extends Command
 
                 if ($this->validator->validate($model)->count()) {
                     foreach ($this->validator->validate($model) as $violation) {
-                        $this->io->warning($violation->getMessage());
+                        $this->io->warning((string) $violation->getMessage());
                     }
                     return Command::INVALID;
                 }
@@ -145,12 +155,16 @@ class RandomMessageCreateCommand extends Command
         return $lang;
     }
 
-    private function getCategories(string $repo)
+    /**
+     * @return array<int, string>
+     * @throws Exception
+     */
+    private function getCategories(string $repo): array
     {
         $categories = [];
         foreach (RandomMessage::getFiles($this->gitService->getPath($repo)) as $item) {
             $model = $this->randomMessage->getModel($item);
-            if ($model) {
+            if ($model && $model->getCategory()) {
                 $categories[] = $model->getCategory();
             }
         }

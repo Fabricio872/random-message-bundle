@@ -14,28 +14,30 @@ use Twig\Extension\RuntimeExtensionInterface;
 class RandomMessage implements RuntimeExtensionInterface
 {
     public function __construct(
-        private readonly string              $path,
-        private readonly string              $defaultLanguage,
+        private readonly string $path,
+        private readonly string $defaultLanguage,
         private readonly SerializerInterface $serializer
-    )
-    {
+    ) {
     }
 
     /**
      * Returns random message
      *
      * @param string|null $language
-     * @return MessageModel|null
      * @throws Exception
      */
-    public function getMessage(string $language = null): ?MessageModel
+    public function getMessage(string $language = null): ?string
     {
         $messageCollection = $this->getAllMessages($language ?? $this->defaultLanguage);
-        return $messageCollection->get(random_int(0, $this->getAllMessages($language ?? $this->defaultLanguage)->count() - 1));
+        $totalMessages = $this->getAllMessages($language ?? $this->defaultLanguage)->count();
+        if ($totalMessages - 1 <= 0) {
+            throw new Exception('Variable cannot be negative number');
+        }
+        return $messageCollection->get(random_int(0, $totalMessages - 1));
     }
 
     /**
-     * @return ArrayCollection<int, MessageModel>
+     * @return ArrayCollection<int, string>
      */
     public function getAllMessages(string $language = null): ArrayCollection
     {
@@ -63,16 +65,22 @@ class RandomMessage implements RuntimeExtensionInterface
         }
     }
 
+    /**
+     * @return array<int, string>
+     */
     public static function getFiles(string $path): array
     {
         $files = [];
         $dirs = scandir($path);
+        if (! $dirs) {
+            throw new Exception(sprintf('Cannot find dir in: "%s"', $path));
+        }
         $dirs = array_splice($dirs, 2);
         foreach ($dirs as $dir) {
-            if (!in_array($dir, ['.git'], true)) {
+            if (! in_array($dir, ['.git'], true)) {
                 $dir = $path . DIRECTORY_SEPARATOR . $dir;
                 if (is_dir($dir)) {
-                    $files = array_merge($files, self::getFiles($dir));
+                    $files = [...$files, ...self::getFiles($dir)];
                 } elseif (is_file($dir)) {
                     $files[] = $dir;
                 }
