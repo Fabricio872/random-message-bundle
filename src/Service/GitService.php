@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Service;
 
 use CzProject\GitPhp\Git;
@@ -8,24 +10,29 @@ use Exception;
 
 class GitService
 {
-    const GIT_CLONE = 0;
-    const GIT_PULL = 1;
-    const GIT_NOTHING = 2;
-    private Git $git;
+    final public const GIT_CLONE = 0;
+
+    final public const GIT_PULL = 1;
+
+    final public const GIT_NOTHING = 2;
+
+    private readonly Git $git;
 
     public function __construct(
-        private string $path
-    )
-    {
+        private readonly string $path
+    ) {
         $this->git = new Git();
     }
 
     public function getPath(string $repository): string
     {
         $parsedUrl = parse_url($repository);
+        if (! isset($parsedUrl['path'])) {
+            throw new Exception('Cannot parse url');
+        }
         $exploded = explode('/', $parsedUrl['path']);
 
-        if (!isset($exploded[1]) || !isset($exploded[2])) {
+        if (! isset($exploded[1]) || ! isset($exploded[2])) {
             throw new Exception(sprintf('Invalid url "%s"', $repository));
         }
 
@@ -38,7 +45,7 @@ class GitService
             $this->git->cloneRepository($repo, $this->getPath($repo));
             return self::GIT_CLONE;
         } catch (GitException $exception) {
-            if (!str_contains($exception->getMessage(), 'Repo already exists')) {
+            if (! str_contains($exception->getMessage(), 'Repo already exists')) {
                 throw $exception;
             }
         }
@@ -52,6 +59,10 @@ class GitService
         return self::GIT_NOTHING;
     }
 
+    /**
+     * @return array<int, string>|null
+     * @throws GitException
+     */
     public function repoChanges(string $repo): ?array
     {
         $repository = $this->git->open($this->getPath($repo));

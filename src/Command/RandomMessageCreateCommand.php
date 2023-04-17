@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Command;
 
 use Composer\InstalledVersions;
+use Exception;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
 use Fabricio872\RandomMessageBundle\RandomMessage;
 use Fabricio872\RandomMessageBundle\Service\GitService;
@@ -11,14 +14,13 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\SerializerInterface;
+use function Symfony\Component\String\u;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use WhiteCube\Lingua\W3cConverter;
-use function Symfony\Component\String\u;
 
 #[AsCommand(
     name: 'random_message:create',
@@ -30,15 +32,22 @@ class RandomMessageCreateCommand extends Command
 
     use QuestionsTrait;
 
+    /**
+     * @param string $path
+     * @param array<int, string> $repositories
+     * @param SerializerInterface $serializer
+     * @param ValidatorInterface $validator
+     * @param GitService $gitService
+     * @param RandomMessage $randomMessage
+     */
     public function __construct(
-        private string              $path,
-        private array               $repositories,
-        private SerializerInterface $serializer,
-        private ValidatorInterface  $validator,
-        private GitService          $gitService,
-        private RandomMessage       $randomMessage
-    )
-    {
+        private readonly string $path,
+        private readonly array $repositories,
+        private readonly SerializerInterface $serializer,
+        private readonly ValidatorInterface $validator,
+        private readonly GitService $gitService,
+        private readonly RandomMessage $randomMessage
+    ) {
         parent::__construct();
     }
 
@@ -60,10 +69,11 @@ class RandomMessageCreateCommand extends Command
         $this->io->writeln(match ($this->gitService->updateRepo($repo)) {
             GitService::GIT_CLONE => sprintf('Repository "%s" cloned', $repo),
             GitService::GIT_PULL => sprintf('Repository "%s" pulled', $repo),
-            GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo)
+            GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo),
+            default => sprintf('Repository "%s" unknown action', $repo)
         });
 
-        if (!$category) {
+        if (! $category) {
             $question = new Question('Category name for messages e.g. dad jokes, inspirational quotes');
             $question->setAutocompleterValues($this->getCategories($repo));
             $category = $this->io->askQuestion($question);
@@ -79,9 +89,9 @@ class RandomMessageCreateCommand extends Command
         }
         $model->setCategory($category);
 
-        if (is_null($model->getLanguage())) {
+        if (null === $model->getLanguage()) {
             $lang = $input->getArgument('lang');
-            if (!$lang) {
+            if (! $lang) {
                 $model->setLanguage($this->getLanguage());
             }
         }
@@ -90,34 +100,31 @@ class RandomMessageCreateCommand extends Command
 
         if ($this->validator->validate($model)->count()) {
             foreach ($this->validator->validate($model) as $violation) {
-                $this->io->warning($violation->getMessage());
+                $this->io->warning((string) $violation->getMessage());
             }
             return Command::INVALID;
         } else {
-            if (!file_exists($this->path)) {
+            if (! file_exists($this->path)) {
                 mkdir($this->path);
             }
 
             $this->writeToFile($filePath, $model);
         }
 
-
         do {
             $rawMessage = $this->io->ask('Add message. Leave empty to stop');
             if ($rawMessage) {
-
                 $model->addMessage($rawMessage);
 
                 if ($this->validator->validate($model)->count()) {
                     foreach ($this->validator->validate($model) as $violation) {
-                        $this->io->warning($violation->getMessage());
+                        $this->io->warning((string) $violation->getMessage());
                     }
                     return Command::INVALID;
                 }
             }
             $this->writeToFile($filePath, $model);
         } while ($rawMessage);
-
 
         return Command::SUCCESS;
     }
@@ -129,7 +136,9 @@ class RandomMessageCreateCommand extends Command
             json_encode(
                 json_decode(
                     $this->serializer->serialize($model, 'json'),
-                    true
+                    true,
+                    512,
+                    JSON_THROW_ON_ERROR
                 ),
                 JSON_PRETTY_PRINT
             )
@@ -139,19 +148,23 @@ class RandomMessageCreateCommand extends Command
     private function getLanguage(): string
     {
         $lang = $this->io->ask('Define language');
-        while (!W3cConverter::check($lang)) {
+        while (! W3cConverter::check($lang)) {
             $this->io->warning(sprintf('Language "%s" has wrong format. Use only to letter naming schema e.g. "en"', $lang));
             $lang = $this->io->ask('Define language', 'en');
         }
         return $lang;
     }
 
-    private function getCategories(string $repo)
+    /**
+     * @return array<int, string>
+     * @throws Exception
+     */
+    private function getCategories(string $repo): array
     {
         $categories = [];
         foreach (RandomMessage::getFiles($this->gitService->getPath($repo)) as $item) {
             $model = $this->randomMessage->getModel($item);
-            if ($model) {
+            if ($model && $model->getCategory()) {
                 $categories[] = $model->getCategory();
             }
         }

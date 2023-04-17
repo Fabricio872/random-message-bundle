@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fabricio872\RandomMessageBundle\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -8,9 +10,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 class MessageModel
 {
     private ?string $category = null;
+
+    /** @var ArrayCollection<int, string> $messages */
     private ArrayCollection $messages;
+
     #[Assert\Language]
     private ?string $language = null;
+
     private ?string $version = null;
 
     public function __construct()
@@ -18,18 +24,11 @@ class MessageModel
         $this->messages = new ArrayCollection();
     }
 
-    /**
-     * @return string|null
-     */
     public function getCategory(): ?string
     {
         return $this->category;
     }
 
-    /**
-     * @param string|null $category
-     * @return MessageModel
-     */
     public function setCategory(?string $category): MessageModel
     {
         $this->category = $category;
@@ -45,8 +44,7 @@ class MessageModel
     }
 
     /**
-     * @param array $messages
-     * @return MessageModel
+     * @param array<int, string> $messages
      */
     public function setMessages(array $messages): MessageModel
     {
@@ -57,17 +55,15 @@ class MessageModel
 
     /**
      * @param string $message
-     * @return MessageModel
      */
     public function addMessage(?string $message): MessageModel
     {
-        $this->messages->add($message);
+        if ($message) {
+            $this->messages->add($message);
+        }
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getLanguage(): ?string
     {
         return $this->language;
@@ -75,7 +71,6 @@ class MessageModel
 
     /**
      * @param string $language
-     * @return MessageModel
      */
     public function setLanguage(?string $language): MessageModel
     {
@@ -83,9 +78,6 @@ class MessageModel
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
     public function getVersion(): ?string
     {
         return $this->version;
@@ -93,7 +85,6 @@ class MessageModel
 
     /**
      * @param string $version
-     * @return MessageModel
      */
     public function setVersion(?string $version): MessageModel
     {
