@@ -20,7 +20,6 @@ class RandomMessagePullCommand extends Command
     private SymfonyStyle $io;
 
     public function __construct(
-        private readonly string $path,
         private readonly array $repositories,
         private readonly GitService $gitService
     ) {
@@ -37,7 +36,8 @@ class RandomMessagePullCommand extends Command
             $this->io->writeln(match ($this->gitService->updateRepo($repo)) {
                 GitService::GIT_CLONE => sprintf('Repository "%s" cloned', $repo),
                 GitService::GIT_PULL => sprintf('Repository "%s" pulled', $repo),
-                GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo)
+                GitService::GIT_NOTHING => sprintf('Repository "%s" up to date', $repo),
+                default => sprintf('Repository "%s" unknown action', $repo)
             });
         }
 

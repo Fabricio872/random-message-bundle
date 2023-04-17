@@ -12,8 +12,9 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('random_message');
+        $rootNode = $treeBuilder->getRootNode();
 
-        $treeBuilder->getRootNode()
+        $rootNode
             ->children()
             ->scalarNode("path")->defaultValue('%kernel.project_dir%/var/random_messages')->info('Define default path where list of messages will be stored.')->end()
             ->arrayNode('repositories')

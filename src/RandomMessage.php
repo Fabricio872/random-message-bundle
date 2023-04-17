@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fabricio872\RandomMessageBundle;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Exception;
 use Fabricio872\RandomMessageBundle\Model\MessageModel;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -13,20 +14,24 @@ use Twig\Extension\RuntimeExtensionInterface;
 class RandomMessage implements RuntimeExtensionInterface
 {
     public function __construct(
-        private readonly string $path,
-        private readonly string $defaultLanguage,
+        private readonly string              $path,
+        private readonly string              $defaultLanguage,
         private readonly SerializerInterface $serializer
-    ) {
+    )
+    {
     }
 
     /**
      * Returns random message
      *
-     * @return string
+     * @param string|null $language
+     * @return MessageModel|null
+     * @throws Exception
      */
-    public function getMessage(string $language = null): ?string
+    public function getMessage(string $language = null): ?MessageModel
     {
-        return $this->getAllMessages($language ?? $this->defaultLanguage)->get(random_int(0, $this->getAllMessages($language ?? $this->defaultLanguage)->count() - 1));
+        $messageCollection = $this->getAllMessages($language ?? $this->defaultLanguage);
+        return $messageCollection->get(random_int(0, $this->getAllMessages($language ?? $this->defaultLanguage)->count() - 1));
     }
 
     /**
@@ -40,7 +45,7 @@ class RandomMessage implements RuntimeExtensionInterface
 
             if ($model) {
                 foreach ($model->getMessages() as $message) {
-                    if ($model->getLanguage() === $language ?? $this->defaultLanguage) {
+                    if ($language ?? $this->defaultLanguage === $model->getLanguage()) {
                         $messages->add($message);
                     }
                 }
@@ -52,7 +57,6 @@ class RandomMessage implements RuntimeExtensionInterface
     public function getModel(string $filePath): ?MessageModel
     {
         try {
-            /** @var MessageModel $model */
             return $this->serializer->deserialize(file_get_contents($filePath), MessageModel::class, 'json');
         } catch (NotEncodableValueException) {
             return null;
@@ -65,7 +69,7 @@ class RandomMessage implements RuntimeExtensionInterface
         $dirs = scandir($path);
         $dirs = array_splice($dirs, 2);
         foreach ($dirs as $dir) {
-            if (! in_array($dir, ['.git'], true)) {
+            if (!in_array($dir, ['.git'], true)) {
                 $dir = $path . DIRECTORY_SEPARATOR . $dir;
                 if (is_dir($dir)) {
                     $files = array_merge($files, self::getFiles($dir));

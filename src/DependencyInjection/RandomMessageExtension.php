@@ -31,14 +31,12 @@ class RandomMessageExtension extends Extension
         $pullCommandDefinition->setArgument(0, $config['path']);
 
         $pullCommandDefinition = $container->getDefinition('fabricio872_random_message.command.random_message_pull_command');
-        $pullCommandDefinition->setArgument(0, $config['path']);
-        $pullCommandDefinition->setArgument(1, $config['repositories']);
+        $pullCommandDefinition->setArgument(0, $config['repositories']);
 
         $pushCommandDefinition = $container->getDefinition('fabricio872_random_message.command.random_message_push_command');
-        $pushCommandDefinition->setArgument(0, $config['path']);
-        $pushCommandDefinition->setArgument(1, $config['repositories']);
-        $pushCommandDefinition->setArgument(2, $config['git_email']);
-        $pushCommandDefinition->setArgument(3, $config['git_name']);
-        $pushCommandDefinition->setArgument(4, $config['git_access_token']);
+        $pushCommandDefinition->setArgument(0, $config['repositories']);
+        $pushCommandDefinition->setArgument(1, $config['git_email']);
+        $pushCommandDefinition->setArgument(2, $config['git_name']);
+        $pushCommandDefinition->setArgument(3, $config['git_access_token']);
     }
 }

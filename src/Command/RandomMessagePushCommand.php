@@ -23,7 +23,6 @@ class RandomMessagePushCommand extends Command
     use QuestionsTrait;
 
     public function __construct(
-        private readonly string $path,
         private readonly array $repositories,
         private readonly string $gitEmail,
         private readonly string $gitName,
